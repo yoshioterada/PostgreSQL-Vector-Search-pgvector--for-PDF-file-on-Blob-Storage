@@ -203,7 +203,7 @@ public class Function {
                 cosmosDBUtil.updateStatus(uuid, CosmosDBDocumentStatus.RETRY_OAI_INVOCATION,
                         context);
                 retryCount++;
-                sleep();
+                retrySleep();
             }
         }
         return embedding;
@@ -253,6 +253,15 @@ public class Function {
     private void sleep() {
         try {
             TimeUnit.MILLISECONDS.sleep(OPENAI_INVOCATION_INTERVAL);
+        } catch (InterruptedException interruptedException) {
+            interruptedException.printStackTrace();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void retrySleep() {
+        try {
+            TimeUnit.SECONDS.sleep(10);
         } catch (InterruptedException interruptedException) {
             interruptedException.printStackTrace();
             Thread.currentThread().interrupt();
