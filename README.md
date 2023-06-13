@@ -220,7 +220,7 @@ Azure Portal に接続して、個別にファイルをアップロードする�
 
 Azure Storage Explorer を起動すると、Azure アカウントで接続が求められますので、接続してください。接続をすると、下記のような画面が表示され、ドラッグ＆ドロップで複数のファイルをまとめてアップロードできるようになります。
 
-<a data-flickr-embed="true" href="https://www.flickr.com/photos/yosshi2007/52971844298/in/dateposted/" title="Azure-Storage-Explorer"><img src="https://live.staticflickr.com/65535/52971844298_690e552bd4_b.jpg" width="1024" height="696" alt="Azure-Storage-Explorer"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+![Azure-Storage-Explorer](https://live.staticflickr.com/65535/52971844298_690e552bd4_b.jpg)
 
 ### 3.4 Spring Boot のアプリケーションの動作確認
 
@@ -228,15 +228,15 @@ Azure Storage Explorer を起動すると、Azure アカウントで接続が求
 テキスト・エリアの箇所に、検索したいキーワードを入力して、`Submit` ボタンをクリックしてください。
 すると、検索結果がストリーミング形式で表示されるようになります。
 
-<a data-flickr-embed="true" href="https://www.flickr.com/photos/yosshi2007/52971893208/in/dateposted/" title="PDF-Document-Search"><img src="https://live.staticflickr.com/65535/52971893208_4a609ecc49_b.jpg" width="1024" height="648" alt="PDF-Document-Search"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+![PDF-Document-Search](https://live.staticflickr.com/65535/52971893208_4a609ecc49_b.jpg)
 
 また、`登録済みファイル一覧` のリンクをクリックすると、DB に登録されているファイルの一覧が表示されます。
 
-<a data-flickr-embed="true" href="https://www.flickr.com/photos/yosshi2007/52971893213/in/dateposted/" title="Registered-PDF-files"><img src="https://live.staticflickr.com/65535/52971893213_3ce16bcee5_b.jpg" width="1024" height="648" alt="Registered-PDF-files"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+![Registered-PDF-files](https://live.staticflickr.com/65535/52971893213_3ce16bcee5_b.jpg)
 
 `登録失敗ファイル一覧` のリンクをクリックすると、DB の登録に失敗したファイルの一覧が表示されます。
 
-<a data-flickr-embed="true" href="https://www.flickr.com/photos/yosshi2007/52971577659/in/dateposted/" title="Failed-PDF-Files"><img src="https://live.staticflickr.com/65535/52971577659_2c76c97669_b.jpg" width="1024" height="648" alt="Failed-PDF-Files"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+![Failed-PDF-Files"](https://live.staticflickr.com/65535/52971577659_2c76c97669_b.jpg)
 
 ## 4. アプリケーションの実装の注意点
 
@@ -274,7 +274,7 @@ private final static int OPENAI_INVOCATION_INTERVAL = 20;
 
 1分間辺りの呼び出し回数は、[Azure OpenAI Studio](https://oai.azure.com/portal/) の `Quotas` からご確認・変更して頂くことができます。
 
-<a data-flickr-embed="true" href="https://www.flickr.com/photos/yosshi2007/52971493166/in/dateposted/" title="open-ai-quotas"><img src="https://live.staticflickr.com/65535/52971493166_04d2a0dd79_b.jpg" width="1024" height="590" alt="open-ai-quotas"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+![open-ai-quotas](https://live.staticflickr.com/65535/52971493166_04d2a0dd79_b.jpg)
 
 ### 4.1.3 Azure Functions における環境変数の設定
 
