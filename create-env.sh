@@ -11,12 +11,12 @@ trap exit_trap ERR
 
 ####################### Azure のリソースを作成するための環境変数の設定 #######################
 # 作成するリソースグループとロケーション設定
-export RESOURCE_GROUP_NAME=Document-Search-Vector2
+export RESOURCE_GROUP_NAME=Document-Search-Vector5
 export DEPLOY_LOCATION=japaneast
 
 # Azure PostgreSQL Flexible Server に関する設定(私の環境では構築制限があるため eastus に設定)
 export POSTGRES_INSTALL_LOCATION=eastus
-export POSTGRES_SERVER_NAME=yoshiodocumentsearch2
+export POSTGRES_SERVER_NAME=yoshiodocumentsearch5
 export POSTGRES_USER_NAME=yoterada
 export POSTGRES_USER_PASS='!'$(head -c 12 /dev/urandom | base64 | tr -dc '[:alpha:]'| fold -w 8 | head -n 1)$RANDOM
 export POSTGRES_DB_NAME=VECTOR_DB
@@ -24,13 +24,13 @@ export POSTGRES_TABLE_NAME=DOCUMENT_SEARCH_VECTOR
 export PUBLIC_IP=$(curl ifconfig.io -4)
 
 # Azure Blob ストレージに関する設定
-export BLOB_STORAGE_ACCOUNT_NAME=yoshiodocumentsearch2
+export BLOB_STORAGE_ACCOUNT_NAME=yoshiodocumentsearch5
 
 #　注意： 下記の値を変更する場合は、Functions.java の BlobTrigger の実装部分も変更する必要があります。
 export BLOB_CONTAINER_NAME_FOR_PDF=pdfs
 
 # Azure Cosmos DB に関する設定
-export COSMOS_DB_ACCOUNT_NAME=yoshiodocumentsearchstatus2
+export COSMOS_DB_ACCOUNT_NAME=yoshiodocumentsearchstatus5
 export COSMOS_DB_DB_NAME=documentregistrystatus
 export COSMOS_DB_CONTAINER_NAME_FOR_STATUS=status
 
@@ -106,8 +106,8 @@ az storage container set-permission --name $BLOB_CONTAINER_NAME_FOR_PDF --public
 az cosmosdb create -g $RESOURCE_GROUP_NAME --name $COSMOS_DB_ACCOUNT_NAME --kind GlobalDocumentDB --locations regionName=$DEPLOY_LOCATION failoverPriority=0 --default-consistency-level "Session"  
 az cosmosdb sql database create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --name $COSMOS_DB_DB_NAME  
 export COSMOS_DB_ACCESS_KEY=$(az cosmosdb keys list -g $RESOURCE_GROUP_NAME --name $COSMOS_DB_ACCOUNT_NAME --type keys --query "primaryMasterKey" -o tsv)
-export INDEX_POLICY=$(cat cosmos-index-policy.json)
-az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --database-name $COSMOS_DB_DB_NAME --name $COSMOS_DB_CONTAINER_NAME_FOR_STATUS --partition-key-path "/id"  --throughput 400  --idx $INDEX_POLICY
+
+az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --database-name $COSMOS_DB_DB_NAME --name $COSMOS_DB_CONTAINER_NAME_FOR_STATUS --partition-key-path "/id"  --throughput 400  --idx @cosmos-index-policy.json
 # Cosmos DB で ORDER BY c.fileName ASC, c.pageNumber ASC を実行できるようにポリシーを設定
 # 詳細：https://learn.microsoft.com/azure/cosmos-db/nosql/how-to-manage-indexing-policy?tabs=dotnetv3%2Cpythonv3#composite-index-defined-for-name-asc-age-asc-and-name-asc-age-desc
 
