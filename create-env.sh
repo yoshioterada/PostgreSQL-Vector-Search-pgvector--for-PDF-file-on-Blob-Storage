@@ -11,7 +11,7 @@ trap exit_trap ERR
 
 ####################### Azure のリソースを作成するための環境変数の設定 #######################
 # 作成するリソースグループとロケーション設定
-export RESROUCE_GROUP_NAME=Document-Search-Vector2
+export RESOURCE_GROUP_NAME=Document-Search-Vector2
 export DEPLOY_LOCATION=japaneast
 
 # Azure PostgreSQL Flexible Server に関する設定(私の環境では構築制限があるため eastus に設定)
@@ -40,11 +40,11 @@ export SUBSCRIPTION_ID="$(az account list --query "[?isDefault].id" -o tsv)"
 
 
 # リソース・グループの作成
-az group create --name $RESROUCE_GROUP_NAME --location $DEPLOY_LOCATION
+az group create --name $RESOURCE_GROUP_NAME --location $DEPLOY_LOCATION
 
 # Azure PostgreSQL Flexible Server の作成
 az postgres flexible-server create --name $POSTGRES_SERVER_NAME \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     --location $POSTGRES_INSTALL_LOCATION \
     --admin-user $POSTGRES_USER_NAME \
     --admin-password $POSTGRES_USER_PASS \
@@ -52,48 +52,48 @@ az postgres flexible-server create --name $POSTGRES_SERVER_NAME \
     --public-access $PUBLIC_IP --yes
 # Azure PostgreSQL Flexible Server Firewall Rule の作成
 az postgres flexible-server firewall-rule create \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     -n $POSTGRES_SERVER_NAME \
     -r AllowAllAzureIPs \
     --start-ip-address 0.0.0.0 \
     --end-ip-address 255.255.255.255
 # Azure PostgreSQL Flexible Server DB の作成
 az postgres flexible-server db create \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     -s $POSTGRES_SERVER_NAME \
     -d $POSTGRES_DB_NAME
 # Azure PostgreSQL Flexible Server DB の日本語設定    
 az postgres flexible-server parameter set \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     --server-name $POSTGRES_SERVER_NAME \
     --subscription $SUBSCRIPTION_ID \
     --name lc_monetary --value "ja_JP.utf-8"
 # Azure PostgreSQL Flexible Server DB の日本語設定    
 az postgres flexible-server parameter set \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     --server-name $POSTGRES_SERVER_NAME \
     --subscription $SUBSCRIPTION_ID \
     --name lc_numeric --value "ja_JP.utf-8"
 # Azure PostgreSQL Flexible Server DB のタイムゾーン設定    
 az postgres flexible-server parameter set \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     --server-name $POSTGRES_SERVER_NAME \
     --subscription $SUBSCRIPTION_ID \
     --name timezone --value "Asia/Tokyo"
 # Azure PostgreSQL Flexible Server DB の拡張機能設定
 az postgres flexible-server parameter set \
-    -g $RESROUCE_GROUP_NAME \
+    -g $RESOURCE_GROUP_NAME \
     --server-name $POSTGRES_SERVER_NAME \
     --subscription $SUBSCRIPTION_ID \
     --name azure.extensions --value "VECTOR,UUID-OSSP"
 
 
 # Azure Blob ストレージ・アカウントの作成
-az storage account create  -g $RESROUCE_GROUP_NAME --name $BLOB_STORAGE_ACCOUNT_NAME --location $DEPLOY_LOCATION --sku Standard_ZRS  --encryption-services blob
+az storage account create  -g $RESOURCE_GROUP_NAME --name $BLOB_STORAGE_ACCOUNT_NAME --location $DEPLOY_LOCATION --sku Standard_ZRS  --encryption-services blob
 # Azure Blob ストレージ・アカウントのアクセス・キーの取得
-export BLOB_ACCOUNT_KEY=$(az storage account keys list --account-name $BLOB_STORAGE_ACCOUNT_NAME -g $RESROUCE_GROUP_NAME --query "[0].value" -o tsv)
+export BLOB_ACCOUNT_KEY=$(az storage account keys list --account-name $BLOB_STORAGE_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --query "[0].value" -o tsv)
 # Azure Blob ストレージ・アカウントの接続文字列の取得
-export BLOB_CONNECTION_STRING=$(az storage account  show-connection-string -g $RESROUCE_GROUP_NAME --name $BLOB_STORAGE_ACCOUNT_NAME --query "connectionString" --output tsv)
+export BLOB_CONNECTION_STRING=$(az storage account  show-connection-string -g $RESOURCE_GROUP_NAME --name $BLOB_STORAGE_ACCOUNT_NAME --query "connectionString" --output tsv)
 
 # Azure Blob ストレージ・コンテナの作成
 az storage container create --account-name $BLOB_STORAGE_ACCOUNT_NAME --name $BLOB_CONTAINER_NAME_FOR_PDF --account-key $BLOB_ACCOUNT_KEY
@@ -103,11 +103,11 @@ az storage container set-permission --name $BLOB_CONTAINER_NAME_FOR_PDF --public
 
 
 # Azure Cosmos DB アカウント DB, コンテナの作成、アクセス・キーの取得
-az cosmosdb create -g $RESROUCE_GROUP_NAME --name $COSMOS_DB_ACCOUNT_NAME --kind GlobalDocumentDB --locations regionName=$DEPLOY_LOCATION failoverPriority=0 --default-consistency-level "Session"  
-az cosmosdb sql database create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESROUCE_GROUP_NAME --name $COSMOS_DB_DB_NAME  
-export COSMOS_DB_ACCESS_KEY=$(az cosmosdb keys list -g $RESROUCE_GROUP_NAME --name $COSMOS_DB_ACCOUNT_NAME --type keys --query "primaryMasterKey" -o tsv)
+az cosmosdb create -g $RESOURCE_GROUP_NAME --name $COSMOS_DB_ACCOUNT_NAME --kind GlobalDocumentDB --locations regionName=$DEPLOY_LOCATION failoverPriority=0 --default-consistency-level "Session"  
+az cosmosdb sql database create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --name $COSMOS_DB_DB_NAME  
+export COSMOS_DB_ACCESS_KEY=$(az cosmosdb keys list -g $RESOURCE_GROUP_NAME --name $COSMOS_DB_ACCOUNT_NAME --type keys --query "primaryMasterKey" -o tsv)
 export INDEX_POLICY=$(cat cosmos-index-policy.json)
-az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESROUCE_GROUP_NAME --database-name $COSMOS_DB_DB_NAME --name $COSMOS_DB_CONTAINER_NAME_FOR_STATUS --partition-key-path "/id"  --throughput 400  --idx $INDEX_POLICY
+az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --database-name $COSMOS_DB_DB_NAME --name $COSMOS_DB_CONTAINER_NAME_FOR_STATUS --partition-key-path "/id"  --throughput 400  --idx $INDEX_POLICY
 # Cosmos DB で ORDER BY c.fileName ASC, c.pageNumber ASC を実行できるようにポリシーを設定
 # 詳細：https://learn.microsoft.com/azure/cosmos-db/nosql/how-to-manage-indexing-policy?tabs=dotnetv3%2Cpythonv3#composite-index-defined-for-name-asc-age-asc-and-name-asc-age-desc
 
