@@ -5,13 +5,15 @@
 先日、[Azure OpenAI Embedding モデルを利用し最も関連性の高いドキュメントを見つける方法](https://qiita.com/yoshioterada/items/3e575828368bf3767532) について説明しました。これを利用する事で、最も関連性の高いドキュメントを見つける事ができます。  
 この記事では、この機能を利用し PDF ファイルを Azure Blob Storage にアップロードすると、自動的に PDF ファイルをテキストに変換し、Azure OpenAI Embedding モデルを利用して、ベクトル検索を行う方法について説明します。
 
-***このサービスを利用すると、社内ドキュメントも、各種論文も PDF ファイルであれば何でも、Azure の Storage にアップロードするだけで、自動的にそのドキュメントを検索できるようにして、実際に検索をすると該当箇所を　ChatGTP が該当部分をまとめて表示してくれるようになります。***
+***このサービスを利用すると、社内ドキュメントも、各種論文も PDF ファイルであれば何でも、Azure の Storage にアップロードするだけで、自動的にそのドキュメントを検索できるようにして、実際に検索をすると該当箇所を　ChatGPT が該当部分をまとめて表示してくれるようになります。***
 
 ### 1.1 サービスの概要
 
 本記事で紹介するサービスは、具体的に下記の手順で処理を行います。
 
-<a data-flickr-embed="true" href="https://www.flickr.com/photos/yosshi2007/52971732748/in/dateposted/" title="Azure-Function-Spring-Embedding-Search"><img src="https://live.staticflickr.com/65535/52971732748_1dc14e38f2_b.jpg" width="1024" height="574" alt="Azure-Function-Spring-Embedding-Search"/></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+アプリケーションの「[ソースコードはこちら](https://github.com/yoshioterada/PostgreSQL-Vector-Search-pgvector--for-PDF-file-on-Blob-Storage)」からご入手ください。
+
+![Azure-Function-Spring-Embedding-Search](https://live.staticflickr.com/65535/52971732748_1dc14e38f2_b.jpg)
 
 1. Azure Blob Storage に PDF ファイルをアップロードする
 2. Azure Functions の Blob Trigger がアップロードされたファイルを検知し、PDF をページ毎にテキストに変換する
@@ -138,7 +140,7 @@ azure.openai.api.key=********************************************
 
 # PostgreSQL を作成したのち、下記のコマンドで接続してください
 -----------------------------------------------------------------------------
-> psql -U yoterada -d VECTOR_DB \
+> psql -U azureuser -d VECTOR_DB \
      -h documentsearch1.postgres.database.azure.com
 
 自動生成した PostgreSQL のパスワード: **********
@@ -165,7 +167,7 @@ VECTOR_DB=> CREATE TABLE IF NOT EXISTS DOCUMENT_SEARCH_VECTOR
 PostgreSQL のインスタンスを生成した後、ローカルの環境からアクセスができるようになっているか、下記のコマンドを実行して確認してください。  
 
 ```bash
-psql -U yoterada -d VECTOR_DB \
+psql -U azureuser -d VECTOR_DB \
      -h documentsearch1.postgres.database.azure.com
 ```
 
@@ -425,7 +427,7 @@ Server 側からリアルタイムに Stream 処理として結果が返って�
 ```
 
 サーバ側では、`@RequestBody` で受け取った、ユーザから入力された文字列を `text-embedding-ada-002` でベクトル化し、その後 PostgreSQL でベクトルで検索を行います。
-PostgreSQL の検索結果を、OpenAI の ChatGPT を呼び出しる要約処理を行っています。
+PostgreSQL の検索結果を、OpenAI の ChatGPT を呼び出して要約処理を行っています。
 最後に、その結果をクライアントのブラウザに対して Server Sent Event で返しています。
 
 ```java
@@ -535,8 +537,7 @@ Cosmos DB では、`ORDER BY` でソートする場合、対象のプロパテ�
 下記のコマンドを実行しています。
 
 ```bash
-export INDEX_POLICY=$(cat cosmos-index-policy.json)
-az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESROUCE_GROUP_NAME --database-name $COSMOS_DB_DB_NAME --name $COSMOS_DB_CONTAINER_NAME_FOR_STATUS --partition-key-path "/id"  --throughput 400  --idx $INDEX_POLICY
+az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESOURCE_GROUP_NAME --database-name $COSMOS_DB_DB_NAME --name $COSMOS_DB_CONTAINER_NAME_FOR_STATUS --partition-key-path "/id"  --throughput 400  --idx @cosmos-index-policy.json
 ```
 
 #### 4.2.5 Spring Data JPA の実装における注意点
@@ -552,7 +553,7 @@ az cosmosdb sql container create --account-name $COSMOS_DB_ACCOUNT_NAME -g $RESR
 
 ## 最後に
 
-繰り返しますが、このサービスを利用すると、社内ドキュメントも、各種論文も PDF ファイルであれば何でも、Azure の Storage にアップロードするだけで、自動的にそのドキュメントを検索できるようにして、実際に検索をすると該当箇所を　ChatGTP が該当部分をまとめて表示してくれるようになります。
+繰り返しますが、このサービスを利用すると、社内ドキュメントも、各種論文も PDF ファイルであれば何でも、Azure の Storage にアップロードするだけで、自動的にそのドキュメントを検索できるようにして、実際に検索をすると該当箇所を　ChatGPT が該当部分をまとめて表示してくれるようになります。
 
 また、PDF だけでなく、ライブラリを利用すれば Word も Excel も、それ以外の文章を扱うことができるようになるかと思います。
 
